@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping("/payments")
 public class PaymentController {
 
-    private PaymentService paymentService;
+    private final PaymentService paymentService;
 
     @GetMapping
     public ResponseEntity<List<PaymentResponse>> getPayments(

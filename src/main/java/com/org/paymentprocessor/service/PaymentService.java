@@ -20,9 +20,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PaymentService {
 
-    private PaymentRepository paymentRepository;
-    private PaymentXmlTransformer paymentXmlTransformer;
-    private XmlFileWriter xmlFileWriter;
+    private final PaymentRepository paymentRepository;
+    private final PaymentXmlTransformer paymentXmlTransformer;
+    private final XmlFileWriter xmlFileWriter;
 
     private static final OffsetDateTime DEFAULT_FROM =
             OffsetDateTime.parse("0001-01-01T00:00:00Z");

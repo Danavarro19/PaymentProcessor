@@ -2,6 +2,7 @@ package com.org.paymentprocessor.controller;
 
 import com.org.paymentprocessor.dto.api.PaymentRequest;
 import com.org.paymentprocessor.dto.api.PaymentResponse;
+import com.org.paymentprocessor.exception.ApiError;
 import com.org.paymentprocessor.model.PaymentStatus;
 import com.org.paymentprocessor.service.PaymentService;
 import org.junit.jupiter.api.Test;
@@ -18,8 +19,7 @@ import java.time.OffsetDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestRestTemplate
@@ -89,5 +89,44 @@ class PaymentCreateTest {
                 .isEqualTo("Payment processed successfully");
 
         verify(paymentService).createPayment(any(PaymentRequest.class));
+    }
+
+    @Test
+    void shouldRejectInvalidPaymentRequest() {
+        PaymentRequest request = PaymentRequest.builder()
+                .id("")
+                .customerId("")
+                .amount(BigDecimal.ZERO)
+                .currency("usd")
+                .timestamp(null)
+                .build();
+
+        ResponseEntity<ApiError> response =
+                restTemplate.postForEntity(
+                        "/payments",
+                        request,
+                        ApiError.class
+                );
+
+        assertThat(response.getStatusCode())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getStatus()).isEqualTo(400);
+        assertThat(response.getBody().getError())
+                .isEqualTo("Validation failed");
+        assertThat(response.getBody().getPath())
+                .isEqualTo("/payments");
+
+        assertThat(response.getBody().getMessage())
+                .contains("id: id is required")
+                .contains("customerId: customerId is required")
+                .contains("amount: amount must be greater than zero")
+                .contains(
+                        "currency: currency must be a three-letter uppercase code"
+                )
+                .contains("timestamp: timestamp is required");
+
+        verifyNoInteractions(paymentService);
     }
 }

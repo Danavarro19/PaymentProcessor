@@ -1,6 +1,7 @@
 package com.org.paymentprocessor.config;
 
 import com.org.paymentprocessor.security.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,7 +47,15 @@ public class SecurityConfig {
                                 .anyRequest()
                                 .authenticated()
                 )
-
+                .exceptionHandling(
+                        exceptions -> exceptions
+                                .authenticationEntryPoint(
+                                        (request, response, exception) ->
+                                                response.sendError(
+                                                        HttpServletResponse.SC_UNAUTHORIZED
+                                                )
+                                )
+                )
                 .authenticationProvider(
                         authenticationProvider()
                 )

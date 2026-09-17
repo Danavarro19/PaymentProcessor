@@ -393,3 +393,23 @@ El objetivo fue mantener una solución pequeña pero con separación clara de re
 **Python sin dependencias externas.** El script utiliza únicamente la librería estándar para que pueda ejecutarse inmediatamente después de clonar el repositorio.
 
 **Tests de seguridad e integración.** Además de las pruebas unitarias mínimas solicitadas, se cubrieron los flujos principales de autenticación y acceso a los endpoints protegidos.
+
+### Índice para la consulta de Top Customers
+
+Se agregó el siguiente índice sobre la tabla `PAYMENTS`:
+
+```sql
+CREATE INDEX idx_payments_status_created_customer
+    ON payments (status, created_at, customer_id);
+```
+
+Este índice busca mejorar la consulta de los 10 clientes con mayor monto pagado, ya que la consulta primero filtra los pagos por status y created_at:
+
+```sql
+WHERE p.status = 'PROCESSED'
+  AND p.created_at >= SYSDATE - 30
+```
+
+Al tener status y created_at al inicio del índice, Oracle puede localizar los pagos procesados dentro del período solicitado sin tener que recorrer necesariamente toda la tabla PAYMENTS.
+
+Se incluye también customer_id, ya que este campo se utiliza posteriormente para relacionar los pagos con los clientes y realizar la agrupación.

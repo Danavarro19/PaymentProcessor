@@ -6,6 +6,7 @@ CREATE TABLE payment_processing_errors (
 
 CREATE OR REPLACE PROCEDURE process_pending_payments
 AS
+    v_error_message VARCHAR2(4000);
 BEGIN
 UPDATE payments
 SET status = 'PROCESSED'
@@ -17,11 +18,13 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
 
+        v_error_message := SQLERRM;
+
 INSERT INTO payment_processing_errors (
     error_message
 )
 VALUES (
-           SQLERRM
+           v_error_message
        );
 
 COMMIT;
